@@ -23,42 +23,53 @@ std::vector<T> KwayMergeSort(const std::vector<T>& array,
         blocks.push_back(std::move(block));
     }
 
-    struct Node {
-        T value;
-        std::size_t block_idx;
-        std::size_t elem_idx;
+    while (blocks.size() > 1) {
+        std::vector<std::vector<T>> next_level;
 
-        bool operator>(const Node& other) const {
-            return value > other.value;
+        for (std::size_t i = 0; i < blocks.size(); i += k) {
+            std::size_t end = std::min(i + k, blocks.size());
+
+            struct Node {
+                T value;
+                std::size_t block_idx;
+                std::size_t elem_idx;
+
+                bool operator>(const Node& other) const {
+                    return value > other.value;
+                }
+            };
+
+            std::priority_queue<Node, std::vector<Node>, std::greater<Node>> heap;
+
+            for (std::size_t j = i; j < end; ++j) {
+                if (!blocks[j].empty()) {
+                    heap.push({blocks[j][0], j - i, 0});
+                }
+            }
+
+            std::vector<std::vector<T>> current(
+                blocks.begin() + i,
+                blocks.begin() + end
+            );
+
+            std::vector<T> merged;
+            while (!heap.empty()) {
+                Node n = heap.top();
+                heap.pop();
+                merged.push_back(n.value);
+
+                std::size_t next = n.elem_idx + 1;
+                if (next < current[n.block_idx].size()) {
+                    heap.push({
+                        current[n.block_idx][next],
+                        n.block_idx,
+                        next
+                    });
+                }
+            }
+            next_level.push_back(std::move(merged));
         }
-    };
-
-    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> heap;
-
-    for (std::size_t i = 0; i < blocks.size(); ++i) {
-        if (!blocks[i].empty()) {
-            heap.push({blocks[i][0], i, 0});
-        }
+        blocks = std::move(next_level);
     }
-
-    std::vector<T> result;
-    result.reserve(array.size());
-
-    while (!heap.empty()) {
-        Node node = heap.top();
-        heap.pop();
-
-        result.push_back(node.value);
-
-        std::size_t next_idx = node.elem_idx + 1;
-        if (next_idx < blocks[node.block_idx].size()) {
-            heap.push({
-                blocks[node.block_idx][next_idx],
-                node.block_idx,
-                next_idx
-            });
-        }
-    }
-
-    return result;
+    return blocks.front();
 }

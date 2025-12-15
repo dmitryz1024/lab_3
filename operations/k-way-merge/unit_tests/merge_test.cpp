@@ -44,3 +44,23 @@ TEST(KWayMergeTest, WithDuplicates) {
 
     EXPECT_EQ(res, expected);
 }
+
+TEST(KWayMergeTest, DifferentBlockSize) {
+    std::vector<int> v = {9, 7, 5, 3, 1, 2, 4, 6, 8};
+    auto res = KwayMergeSort(v, 3, 2);
+
+    std::vector<int> expected = v;
+    std::sort(expected.begin(), expected.end());
+
+    EXPECT_EQ(res, expected);
+}
+
+TEST(KWayMergeTest, LargeBlockSmallK) {
+    std::vector<int> v = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+    auto res = KwayMergeSort(v, 2, 5);
+
+    std::vector<int> expected = v;
+    std::sort(expected.begin(), expected.end());
+
+    EXPECT_EQ(res, expected);
+}
